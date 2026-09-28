@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx ts-node src/app.ts",
     "dev": "ts-node-dev src/app.ts",
-    "build": "prisma generate && prisma db push"
+    "build": "npx prisma generate && npx prisma db push"
   },
   "keywords": [],
   "author": "",
