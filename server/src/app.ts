@@ -5,6 +5,7 @@ import type { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import path from 'path';
 
 dotenv.config();
 
@@ -375,11 +376,14 @@ app.post('/api/assets/:id/assign', async (req: Request, res: Response) => {
 
 // import path from 'path';
 
-// // --- DEPLOYMENT: SERVE FRONTEND ---
-// app.use(express.static(path.join(__dirname, '../../client/dist')));
-// app.get('*', (req: Request, res: Response) => {
-//   res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-// });
+
+// --- DEPLOYMENT: SERVE FRONTEND ---
+const clientBuildPath = path.join(__dirname, '../../client/dist');
+app.use(express.static(clientBuildPath));
+
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(clientBuildPath, 'index.html'));
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
