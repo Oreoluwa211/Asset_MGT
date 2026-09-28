@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ui-blue: #002855; /* UI Deep Indigo Blue */
+  --color-ui-gold: #E5A823; /* UI Gold */
+  --color-ui-neutral: #f3f4f6;
+  --color-ui-dark: #1f2937;
+}
+
+body {
+  background-color: #f9fafb;
+}
+
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .z-50, .z-50 * {
+    visibility: visible;
+  }
+  .z-50 {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    background: white;
+  }
+  button {
+    display: none !important;
+  }
+}
