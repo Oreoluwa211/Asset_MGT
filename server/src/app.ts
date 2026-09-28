@@ -381,7 +381,8 @@ app.post('/api/assets/:id/assign', async (req: Request, res: Response) => {
 const clientBuildPath = path.join(__dirname, '../../client/dist');
 app.use(express.static(clientBuildPath));
 
-app.get('*', (req: Request, res: Response) => {
+// Notice we removed the quotes around * and turned it into a RegEx /.*/
+app.get(/.*/, (req: Request, res: Response) => {
   res.sendFile(path.join(clientBuildPath, 'index.html'));
 });
 
