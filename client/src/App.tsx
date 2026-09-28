@@ -17,12 +17,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="flex h-64 items-center justify-center bg-white rounded-xl border border-gray-100 shadow-sm">
-    <h2 className="text-xl text-gray-500 font-medium">{title} Page (Coming Soon)</h2>
-  </div>
-);
-
 function AppRoutes() {
   return (
     <Routes>
