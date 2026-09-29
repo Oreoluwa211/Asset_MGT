@@ -17,19 +17,17 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  // Check for saved login on refresh
-  useEffect(() => {
+  // 1. Check permanent storage immediately on load
+  const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('ui_user');
-    const savedToken = localStorage.getItem('ui_token');
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
-    }
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
+  const [token, setToken] = useState<string | null>(() => {
+    return localStorage.getItem('ui_token');
+  });
+
+  // 2. Save to permanent storage on login
   const login = (userData: User, authToken: string) => {
     setUser(userData);
     setToken(authToken);
@@ -37,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('ui_token', authToken);
   };
 
+  // 3. Wipe permanent storage on logout
   const logout = () => {
     setUser(null);
     setToken(null);
