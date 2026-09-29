@@ -4,7 +4,7 @@ generator client {
 
 // Using SQLite for lightning-fast local MVP development
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

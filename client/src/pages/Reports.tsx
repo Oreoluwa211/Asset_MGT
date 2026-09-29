@@ -6,7 +6,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/assets')
+    fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/assets')
       .then(res => res.json())
       .then(data => {
         setAssets(data);

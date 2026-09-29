@@ -14,8 +14,8 @@ export default function Staff() {
 
   const fetchData = () => {
     Promise.all([
-      fetch('/api/staff').then(res => res.json()),
-      fetch('/api/departments').then(res => res.json())
+      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json()),
+      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json())
     ]).then(([staffData, deptsData]) => {
       setStaff(staffData); 
       setDepartments(deptsData); 

@@ -10,7 +10,7 @@ export default function Departments() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchDepartments = () => {
-    fetch('/api/departments')
+    fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/departments')
       .then(res => res.json())
       .then(data => { setDepartments(data); setLoading(false); });
   };
