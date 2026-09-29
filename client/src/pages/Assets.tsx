@@ -31,10 +31,10 @@ export default function Assets() {
 
   const fetchData = () => {
     Promise.all([
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/assets').then(res => res.json()),
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json()),
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/categories').then(res => res.json()),
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json())
+      fetch('https://asset-mgt-ewkj.onrender.com/api/assets').then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/categories').then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json())
     ]).then(([assetsData, deptsData, catsData, staffData]) => {
       setAssets(assetsData);
       setDepartments(deptsData);
@@ -50,7 +50,7 @@ export default function Assets() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/assets', {
+      const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
@@ -72,7 +72,7 @@ export default function Assets() {
     e.preventDefault();
     if (!assignAsset) return;
     try {
-      const res = await fetch(`/api/assets/${assignAsset.id}/assign`, {
+      const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${assignAsset.id}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assignData)

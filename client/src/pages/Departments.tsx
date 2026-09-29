@@ -10,7 +10,7 @@ export default function Departments() {
   const [errorMsg, setErrorMsg] = useState('');
 
   const fetchDepartments = () => {
-    fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/departments')
+    fetch('https://asset-mgt-ewkj.onrender.com/api/departments')
       .then(res => res.json())
       .then(data => { setDepartments(data); setLoading(false); });
   };
@@ -19,7 +19,7 @@ export default function Departments() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = formData.id ? `/api/departments/${formData.id}` : '/api/departments';
+    const url = formData.id ? `https://asset-mgt-ewkj.onrender.com/api/departments/${formData.id}` : 'https://asset-mgt-ewkj.onrender.com/api/departments';
     const method = formData.id ? 'PUT' : 'POST';
     
     await fetch(url, {
