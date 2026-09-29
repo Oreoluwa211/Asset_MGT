@@ -236,23 +236,30 @@ export default function Assets() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Category</label>
-                  <select required className="mt-1 w-full border border-gray-300 rounded-md p-2"
-                    value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}>
-                    <option value="" disabled>Select Category...</option>
-                    <option value="Furniture">Furniture</option>
-                    <option value="Electronics">Electronics</option>
-                    <option value="IT Infrastructure">IT Infrastructure</option>
-                    <option value="Vehicles">Vehicles</option>
-                    <option value="Laboratory">Laboratory Equipment</option>
-                    <option value="Real Estate">Real Estate</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                  <div className="space-y-1">
+                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                    <select 
+                      required 
+                      className="mt-1 w-full border border-gray-300 rounded-md p-2.5 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm appearance-none"
+                      style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1em' }}
+                      value={formData.category_id} 
+                      onChange={e => setFormData({...formData, category_id: e.target.value})}
+                    >
+                      <option value="" disabled>Select Category...</option>
+                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Department</label>
-                  <select required className="mt-1 w-full border border-gray-300 rounded-md p-2"
-                    value={formData.department_id} onChange={e => setFormData({...formData, department_id: e.target.value})}>
-                    <option value="">Select...</option>
+                  <select 
+                    required 
+                    className="mt-1 w-full border border-gray-300 rounded-md p-2.5 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm appearance-none"
+                    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1em' }}
+                    value={formData.category_id} 
+                    onChange={e => setFormData({...formData, category_id: e.target.value})}
+                  >
+                    <option value="" disabled>Select Department...</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>

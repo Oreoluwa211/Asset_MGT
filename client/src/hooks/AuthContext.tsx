@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
 
 interface User {
   id: string;
@@ -42,6 +42,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('ui_user');
     localStorage.removeItem('ui_token');
   };
+
+  // --- INACTIVITY AUTO-LOGOUT (20 Minutes) ---
+  useEffect(() => {
+    if (!user) return;
+
+    const checkInactivity = () => {
+      const lastActive = localStorage.getItem('last_active_time');
+      // 20 minutes = 1,200,000 milliseconds
+      if (lastActive && Date.now() - parseInt(lastActive) > 1200000) {
+        logout();
+        alert("Session expired due to inactivity. Please log in again.");
+      }
+    };
+
+    const updateActivity = () => {
+      localStorage.setItem('last_active_time', Date.now().toString());
+    };
+
+    // Set initial timestamp on load
+    updateActivity();
+
+    // Check the timer every 1 minute
+    const interval = setInterval(checkInactivity, 60000);
+
+    // Reset the timer whenever the user clicks or types
+    window.addEventListener('mousemove', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('scroll', updateActivity);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('mousemove', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('scroll', updateActivity);
+    };
+  }, [user]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout }}>
