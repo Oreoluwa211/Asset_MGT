@@ -110,7 +110,7 @@ export default function Assets() {
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-[800px]">
+        <table className="w-full text-left border-collapse min-w-[800px] whitespace-nowrap">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr className="text-sm text-gray-500">
               <th className="px-6 py-4 font-medium">Asset ID</th>
@@ -238,7 +238,13 @@ export default function Assets() {
                   <label className="block text-sm font-medium text-gray-700">Category</label>
                   <select required className="mt-1 w-full border border-gray-300 rounded-md p-2"
                     value={formData.category_id} onChange={e => setFormData({...formData, category_id: e.target.value})}>
-                    <option value="">Select...</option>
+                    <option value="" disabled>Select Category...</option>
+                    <option value="Furniture">Furniture</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="IT Infrastructure">IT Infrastructure</option>
+                    <option value="Vehicles">Vehicles</option>
+                    <option value="Laboratory">Laboratory Equipment</option>
+                    <option value="Real Estate">Real Estate</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
                 </div>

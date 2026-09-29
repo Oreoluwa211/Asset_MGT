@@ -63,8 +63,8 @@ export default function Maintenance() {
       </div>
 
       {/* Maintenance Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-left border-collapse">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-x-auto w-full">
+        <table className="w-full text-left border-collapse whitespace-nowrap">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr className="text-sm text-gray-500">
               <th className="px-6 py-4 font-medium">Date Reported</th>
