@@ -14,7 +14,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   useEffect(() => {
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
-    fetch(`/api/dashboard${query}`)
+    fetch(`https://asset-mgt-ewkj.onrender.com/api/dashboard${query}`)
       .then((res) => res.json())
       .then((fetchedData) => {
         setData(fetchedData);

@@ -18,8 +18,8 @@ export default function Maintenance() {
   const fetchData = () => {
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
     Promise.all([
-      fetch(`/api/maintenance${query}`).then((res) => res.json()),
-      fetch(`/api/assets${query}`).then((res) => res.json())
+      fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance${query}`).then((res) => res.json()),
+      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets${query}`).then((res) => res.json())
     ]).then(([maintenanceData, assetsData]) => {
       setRecords(maintenanceData);
       setAssets(assetsData);
@@ -32,7 +32,7 @@ export default function Maintenance() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/maintenance', {
+      const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/maintenance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)

@@ -14,8 +14,8 @@ export default function Staff() {
 
   const fetchData = () => {
     Promise.all([
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json()),
-      fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json())
+      fetch('https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json())
     ]).then(([staffData, deptsData]) => {
       setStaff(staffData); 
       setDepartments(deptsData); 
@@ -27,7 +27,7 @@ export default function Staff() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const url = formData.id ? `/api/staff/${formData.id}` : '/api/staff';
+    const url = formData.id ? `https://asset-mgt-ewkj.onrender.com/api/staff/${formData.id}` : 'https://asset-mgt-ewkj.onrender.com/api/staff';
     const method = formData.id ? 'PUT' : 'POST';
     
     await fetch(url, {
@@ -42,7 +42,7 @@ export default function Staff() {
 
   const handleDelete = async () => {
     if (!deleteModal) return;
-    const res = await fetch(`/api/staff/${deleteModal.id}`, { method: 'DELETE' });
+    const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/staff/${deleteModal.id}`, { method: 'DELETE' });
     if (res.ok) {
       setDeleteModal(null);
       setErrorMsg('');

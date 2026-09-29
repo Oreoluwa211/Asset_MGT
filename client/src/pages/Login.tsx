@@ -15,7 +15,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('[https://asset-mgt-ewkj.onrender.com/api](https://asset-mgt-ewkj.onrender.com/api/auth/login', {
+      const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
