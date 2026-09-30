@@ -200,7 +200,7 @@ export default function Assets() {
             </div>
             <div className="p-8 flex flex-col items-center text-center">
               <div className="bg-white p-4 border-2 border-gray-200 rounded-lg shadow-sm mb-4">
-                <QRCodeSVG value={qrAsset.asset_id} size={160} level="H" />
+                <QRCodeSVG value={`https://ui-asset-mgt.vercel.app/assets?search=${qrAsset.asset_id}`} size={160} level="H" />
               </div>
               <h4 className="text-2xl font-black text-gray-900 tracking-wider mb-1">{qrAsset.asset_id}</h4>
               <p className="text-gray-500 font-medium">{qrAsset.name}</p>
@@ -235,7 +235,6 @@ export default function Assets() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Category</label>
                   <div className="space-y-1">
                     <label className="block text-sm font-medium text-gray-700">Category</label>
                     <select 

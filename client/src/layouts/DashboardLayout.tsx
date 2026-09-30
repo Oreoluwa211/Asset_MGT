@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Package, Users, Building, Wrench, FileSpreadsheet, Settings, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Package, Users, Building, Wrench, FileSpreadsheet, Settings, LogOut, Menu, X, Search } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
 
@@ -97,7 +97,22 @@ export default function DashboardLayout() {
               University of Ibadan Asset Management
             </h2>
           </div>
-
+          {/* Center: Global Search Bar */}
+            <div className="flex-1 max-w-xl px-4 sm:px-8">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search any asset, tag, or staff..."
+                  className="w-full bg-gray-50 border border-gray-200 text-sm rounded-full py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-ui-blue focus:border-transparent transition-all"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      window.location.href = `/assets?search=${encodeURIComponent(e.currentTarget.value)}`;
+                    }
+                  }}
+                />
+                <Search className="w-4 h-4 text-gray-400 absolute right-3.5 top-2.5" />
+              </div>
+            </div>
           <div className="flex items-center space-x-3">
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-gray-900">{user?.name}</p>
