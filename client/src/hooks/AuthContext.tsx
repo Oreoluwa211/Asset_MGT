@@ -19,28 +19,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   // 1. Check permanent storage immediately on load
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('ui_user');
+    const savedUser = sessionStorage.getItem('ui_user');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('ui_token');
+    return sessionStorage.getItem('ui_token');
   });
 
   // 2. Save to permanent storage on login
   const login = (userData: User, authToken: string) => {
     setUser(userData);
     setToken(authToken);
-    localStorage.setItem('ui_user', JSON.stringify(userData));
-    localStorage.setItem('ui_token', authToken);
+    sessionStorage.setItem('ui_user', JSON.stringify(userData));
+    sessionStorage.setItem('ui_token', authToken);
   };
 
   // 3. Wipe permanent storage on logout
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('ui_user');
-    localStorage.removeItem('ui_token');
+    sessionStorage.removeItem('ui_user');
+    sessionStorage.removeItem('ui_token');
   };
 
   // --- INACTIVITY AUTO-LOGOUT (20 Minutes) ---
@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return;
 
     const checkInactivity = () => {
-      const lastActive = localStorage.getItem('last_active_time');
+      const lastActive = sessionStorage.getItem('last_active_time');
       // 20 minutes = 1,200,000 milliseconds
       if (lastActive && Date.now() - parseInt(lastActive) > 1200000) {
         logout();
@@ -57,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const updateActivity = () => {
-      localStorage.setItem('last_active_time', Date.now().toString());
+      sessionStorage.setItem('last_active_time', Date.now().toString());
     };
 
     // Set initial timestamp on load

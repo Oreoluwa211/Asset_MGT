@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { Scanner } from '@yudiel/react-qr-scanner';
 
 interface Asset {
   id: string; asset_id: string; name: string;
@@ -19,6 +20,7 @@ export default function Assets() {
   // Modals State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   
   // Assignment Modal State
   const [assignAsset, setAssignAsset] = useState<Asset | null>(null);
@@ -99,9 +101,14 @@ export default function Assets() {
           <h2 className="text-2xl font-bold text-gray-800">Assets</h2>
           <p className="text-sm text-gray-500">Manage university assets and equipment</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="bg-ui-blue text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-900 transition-colors shadow-sm font-medium cursor-pointer">
-          <Plus className="w-5 h-5 mr-2" /> Add Asset
-        </button>
+        <div className="flex gap-3">
+          <button onClick={() => setIsScannerOpen(true)} className="bg-ui-blue text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-900 transition-colors shadow-sm font-medium cursor-pointer">
+            <Scan className="w-5 h-5 mr-2" /> Scan QR Code
+          </button>
+          <button onClick={() => setIsModalOpen(true)} className="bg-ui-blue text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-900 transition-colors shadow-sm font-medium cursor-pointer">
+            <Plus className="w-5 h-5 mr-2" /> Add Asset
+          </button>
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center">
@@ -249,14 +256,14 @@ export default function Assets() {
                     </select>
                   </div>
                 </div>
-                <div>
+                <div className="space-y-1">
                   <label className="block text-sm font-medium text-gray-700">Department</label>
                   <select 
                     required 
                     className="mt-1 w-full border border-gray-300 rounded-md p-2.5 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm appearance-none"
                     style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1em' }}
-                    value={formData.category_id} 
-                    onChange={e => setFormData({...formData, category_id: e.target.value})}
+                    value={formData.department_id} 
+                    onChange={e => setFormData({...formData, department_id: e.target.value})}
                   >
                     <option value="" disabled>Select Department...</option>
                     {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
@@ -276,6 +283,32 @@ export default function Assets() {
         </div>
       )}
       {/* Ensure you keep the existing Add Asset Modal at the bottom here exactly as it was! */}
+      {/* In-App Camera Scanner Modal */}
+        {isScannerOpen && (
+          <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-50 p-4">
+            <div className="bg-white p-4 rounded-xl w-full max-w-md relative overflow-hidden">
+              <button 
+                onClick={() => setIsScannerOpen(false)} 
+                className="absolute top-4 right-4 z-10 bg-white rounded-full p-1 text-gray-800 hover:text-red-600 shadow-md"
+              >
+                <X className="w-6 h-6" />
+              </button>
+              <h3 className="text-lg font-bold mb-4 text-center text-gray-800">Scan Asset QR</h3>
+              
+              <div className="rounded-lg overflow-hidden bg-black">
+                <Scanner 
+                  onScan={(result) => {
+                    if (result && result.length > 0) {
+                      const scannedUrl = result[0].rawValue;
+                      window.location.href = scannedUrl;
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 text-center mt-4">Point your camera at the physical asset tag.</p>
+            </div>
+          </div>  
+        )}
     </div>
   );
 }
