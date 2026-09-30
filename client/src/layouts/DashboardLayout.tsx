@@ -85,47 +85,52 @@ export default function DashboardLayout() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <header className="bg-white h-20 border-r border-gray-200 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-            >
+        {/* Header */}
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-100 h-16 flex items-center justify-between px-3 sm:px-6 sticky top-0 z-40">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setMobileOpen(true)} className="lg:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
               <Menu className="w-6 h-6" />
             </button>
-            <h2 className="text-base sm:text-lg font-bold text-gray-800 truncate">
-              University of Ibadan Asset Management
-            </h2>
+            <div className="hidden sm:flex items-center gap-2">
+              <img src="/ui-logo.png" alt="UI Logo" className="w-8 h-8" />
+              <h1 className="text-lg font-bold text-gray-800 tracking-tight hidden md:block">UI Assets</h1>
+            </div>
           </div>
-          {/* Center: Global Search Bar */}
-            <div className="flex-1 max-w-xl px-4 sm:px-8">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search any asset, tag, or staff..."
-                  className="w-full bg-gray-50 border border-gray-200 text-sm rounded-full py-2 pl-4 pr-10 focus:outline-none focus:ring-2 focus:ring-ui-blue focus:border-transparent transition-all"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      window.location.href = `/assets?search=${encodeURIComponent(e.currentTarget.value)}`;
-                    }
-                  }}
-                />
-                <Search className="w-4 h-4 text-gray-400 absolute right-3.5 top-2.5" />
-              </div>
+
+          {/* Search Bar - Better Mobile Sizing */}
+          <div className="flex-1 max-w-2xl px-2 sm:px-8">
+            <div className="relative group">
+              <input
+                type="text"
+                placeholder="Search assets..."
+                className="w-full bg-gray-100/50 border border-gray-200 text-sm rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:bg-white focus:ring-2 focus:ring-ui-blue/30 focus:border-ui-blue transition-all shadow-inner"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    window.location.href = `/assets?search=${encodeURIComponent(e.currentTarget.value)}`;
+                  }
+                }}
+              />
+              <Search className="w-4 h-4 text-gray-400 absolute left-4 top-3 group-focus-within:text-ui-blue" />
             </div>
-          <div className="flex items-center space-x-3">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-gray-900">{user?.name}</p>
-              <p className="text-xs font-medium text-gray-500">{user?.role}</p>
-            </div>
-            <div className="h-10 w-10 rounded-full bg-ui-blue text-white flex items-center justify-center font-bold text-lg border-2 border-ui-gold flex-shrink-0">
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-ui-blue to-blue-900 text-white flex items-center justify-center font-bold shadow-md shadow-blue-900/20">
               {user?.name?.charAt(0) || 'U'}
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-gray-50/50">
-          <Outlet />
+        {/* Main Content with Watermark */}
+        <main className="flex-1 overflow-y-auto bg-gray-50/50 relative">
+          {/* Magic UI Watermark */}
+          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-[0.03]">
+            <img src="/ui-logo.png" alt="watermark" className="w-[30rem] h-[30rem] object-contain grayscale" />
+          </div>
+          
+          <div className="relative z-10 p-4 md:p-6 lg:p-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

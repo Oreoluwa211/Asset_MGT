@@ -73,7 +73,7 @@ export default function Dashboard() {
         {/* Table */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Assets</h3>
-          <table className="w-full text-left border-collapse whitespace-nowrap">
+          <table className="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
             <thead>
               <tr className="border-b border-gray-200 text-sm text-gray-500">
                 <th className="pb-3 font-medium">Asset ID</th>

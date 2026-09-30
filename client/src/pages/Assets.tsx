@@ -26,6 +26,8 @@ export default function Assets() {
   const [assignAsset, setAssignAsset] = useState<Asset | null>(null);
   const [assignData, setAssignData] = useState({ staff_id: '', department_id: '', location: '' });
 
+  const [viewAsset, setViewAsset] = useState<any>(null);
+
   const [formData, setFormData] = useState({
     asset_id: '', name: '', category_id: '', department_id: '',
     location: '', condition: 'New', status: 'Available'
@@ -207,7 +209,7 @@ export default function Assets() {
             </div>
             <div className="p-8 flex flex-col items-center text-center">
               <div className="bg-white p-4 border-2 border-gray-200 rounded-lg shadow-sm mb-4">
-                <QRCodeSVG value={`https://ui-asset-mgt.vercel.app/assets?search=${qrAsset.asset_id}`} size={160} level="H" />
+                <QRCodeSVG value={qrAsset.asset_id} size={160} level="H" />
               </div>
               <h4 className="text-2xl font-black text-gray-900 tracking-wider mb-1">{qrAsset.asset_id}</h4>
               <p className="text-gray-500 font-medium">{qrAsset.name}</p>
@@ -299,8 +301,16 @@ export default function Assets() {
                 <Scanner 
                   onScan={(result) => {
                     if (result && result.length > 0) {
-                      const scannedUrl = result[0].rawValue;
-                      window.location.href = scannedUrl;
+                      const scannedId = result[0].rawValue;
+                      // Search the currently loaded assets for the matching ID
+                      const found = assets.find((a: any) => a.asset_id === scannedId);
+                      
+                      if (found) {
+                        setIsScannerOpen(false); // Close camera
+                        setViewAsset(found);     // Open details modal
+                      } else {
+                        alert(`Scanned ID: ${scannedId} not found in current database.`);
+                      }
                     }
                   }}
                 />
@@ -308,6 +318,44 @@ export default function Assets() {
               <p className="text-sm text-gray-500 text-center mt-4">Point your camera at the physical asset tag.</p>
             </div>
           </div>  
+        )}
+        {/* Scanned Asset Details Modal */}
+        {viewAsset && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
+              <div className="bg-gradient-to-r from-ui-blue to-blue-900 p-5 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white">Asset Details</h3>
+                <button onClick={() => setViewAsset(null)} className="text-white/80 hover:text-white bg-white/10 rounded-full p-1">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="p-6 space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Asset Name</span>
+                  <span className="font-bold text-gray-900">{viewAsset.name}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Tag ID</span>
+                  <span className="font-mono text-ui-blue font-semibold">{viewAsset.asset_id}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Status</span>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${viewAsset.status === 'In Use' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                    {viewAsset.status}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Department</span>
+                  <span className="text-gray-800">{viewAsset.department?.name || 'N/A'}</span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Location</span>
+                  <span className="text-gray-800">{viewAsset.location || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
     </div>
   );
