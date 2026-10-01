@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan, FileSpreadsheet } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -49,6 +49,32 @@ export default function Assets() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  const exportToCSV = () => {
+    // 1. Define the headers
+    const headers = ['Asset ID', 'Name', 'Category', 'Department', 'Status', 'Location'];
+    
+    // 2. Map the data into comma-separated rows
+    const csvData = assets.map(a => [
+      a.asset_id,
+      `"${a.name}"`, // Wrapped in quotes in case names have commas
+      `"${a.category?.name || ''}"`,
+      `"${a.department?.name || ''}"`,
+      a.status,
+      `"${(a as Asset & { location?: string }).location || ''}"`
+    ].join(','));
+    
+    // 3. Combine headers and data
+    const csvString = [headers.join(','), ...csvData].join('\n');
+    
+    // 4. Trigger the download
+    const blob = new Blob([csvString], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `UI_Assets_Report_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  };
 
   // Handle New Asset Creation
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,9 +133,19 @@ export default function Assets() {
           <button onClick={() => setIsScannerOpen(true)} className="bg-ui-blue text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-900 transition-colors shadow-sm font-medium cursor-pointer">
             <Scan className="w-5 h-5 mr-2" /> Scan QR Code
           </button>
+          
           <button onClick={() => setIsModalOpen(true)} className="bg-ui-blue text-white px-4 py-2 rounded-md flex items-center hover:bg-blue-900 transition-colors shadow-sm font-medium cursor-pointer">
             <Plus className="w-5 h-5 mr-2" /> Add Asset
           </button>
+          <div className="flex space-x-3">
+            {/* NEW EXPORT BUTTON */}
+            <button 
+              onClick={exportToCSV}
+              className="bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg font-medium hover:bg-green-100 flex items-center transition-colors hidden sm:flex"
+            >
+              <FileSpreadsheet className="w-4 h-4 mr-2" /> Export CSV
+            </button>
+          </div>
         </div>
       </div>
 

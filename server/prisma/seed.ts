@@ -17,6 +17,8 @@ async function main() {
   const catComputer = await prisma.category.create({ data: { name: 'Computer' } });
   const catPrinter = await prisma.category.create({ data: { name: 'Printer' } });
   const catFurniture = await prisma.category.create({ data: { name: 'Furniture' } });
+  const catCommunication  = await prisma.category.create({ data: { name: 'Communication' } });
+  const catPeripherals = await prisma.category.create({ data: { name: 'Peripherals' } });
 
   // 3. Create Staff
   const staff1 = await prisma.staff.create({
@@ -50,7 +52,7 @@ async function main() {
 main()
   .catch((e) => {
     console.error(e);
-    process.exit(1);
+    throw e;
   })
   .finally(async () => {
     await prisma.$disconnect();

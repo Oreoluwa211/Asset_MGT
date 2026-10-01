@@ -124,7 +124,7 @@ export default function DashboardLayout() {
         {/* Main Content with Watermark */}
         <main className="flex-1 overflow-y-auto bg-gray-50/50 relative">
           {/* Magic UI Watermark */}
-          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-[0.03]">
+          <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10">
             <img src="/ui-logo.png" alt="watermark" className="w-[30rem] h-[30rem] object-contain grayscale" />
           </div>
           

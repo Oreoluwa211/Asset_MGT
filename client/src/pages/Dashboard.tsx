@@ -36,7 +36,7 @@ export default function Dashboard() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {[
           { title: 'Total Assets', value: data.stats.total, icon: Package, color: 'text-blue-600' },
           { title: 'Active / In Use', value: data.stats.inUse, icon: CheckCircle, color: 'text-green-600' },
@@ -71,37 +71,39 @@ export default function Dashboard() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Assets</h3>
-          <table className="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
-            <thead>
-              <tr className="border-b border-gray-200 text-sm text-gray-500">
-                <th className="pb-3 font-medium">Asset ID</th>
-                <th className="pb-3 font-medium">Name</th>
-                <th className="pb-3 font-medium">Category</th>
-                <th className="pb-3 font-medium">Department</th>
-                <th className="pb-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody className="text-sm">
-              {data.recentAssets.map((asset) => (
-                <tr key={asset.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                  <td className="py-3 font-medium text-gray-900">{asset.asset_id}</td>
-                  <td className="py-3 text-gray-600">{asset.name}</td>
-                  <td className="py-3 text-gray-600">{asset.category?.name}</td>
-                  <td className="py-3 text-gray-600">{asset.department?.name}</td>
-                  <td className="py-3">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                      ${asset.status === 'In Use' ? 'bg-green-100 text-green-700' : 
-                        asset.status === 'Available' ? 'bg-yellow-100 text-yellow-700' : 
-                        'bg-red-100 text-red-700'}`}>
-                      {asset.status}
-                    </span>
-                  </td>
+          <div className="overflow-x-auto w-full pb-2">
+            <table className="w-full text-left border-collapse whitespace-nowrap min-w-[700px]">
+              <thead>
+                <tr className="border-b border-gray-200 text-sm text-gray-500">
+                  <th className="pb-3 font-medium">Asset ID</th>
+                  <th className="pb-3 font-medium">Name</th>
+                  <th className="pb-3 font-medium">Category</th>
+                  <th className="pb-3 font-medium">Department</th>
+                  <th className="pb-3 font-medium">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="text-sm">
+                {data.recentAssets.map((asset) => (
+                  <tr key={asset.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td className="py-3 font-medium text-gray-900">{asset.asset_id}</td>
+                    <td className="py-3 text-gray-600">{asset.name}</td>
+                    <td className="py-3 text-gray-600">{asset.category?.name}</td>
+                    <td className="py-3 text-gray-600">{asset.department?.name}</td>
+                    <td className="py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                        ${asset.status === 'In Use' ? 'bg-green-100 text-green-700' : 
+                          asset.status === 'Available' ? 'bg-yellow-100 text-yellow-700' : 
+                          'bg-red-100 text-red-700'}`}>
+                        {asset.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
