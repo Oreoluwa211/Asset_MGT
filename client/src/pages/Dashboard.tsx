@@ -53,9 +53,9 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Chart */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1">
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Assets by Category</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">

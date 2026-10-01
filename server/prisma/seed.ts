@@ -5,6 +5,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('Seeding database with University of Ibadan mock data...');
 
+// 0. Clear existing mock data to prevent duplicate errors
+  await prisma.maintenance.deleteMany();
+  await prisma.asset.deleteMany();
+  await prisma.staff.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.department.deleteMany();
+
   // 1. Create Departments
   const deptCS = await prisma.department.create({
     data: { name: 'Computer Science', faculty: 'Faculty of Science' }
