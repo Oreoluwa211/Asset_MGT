@@ -23,10 +23,13 @@ export default function Assets() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   
   // Assignment Modal State
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [assignAsset, setAssignAsset] = useState<Asset | null>(null);
   const [assignData, setAssignData] = useState({ staff_id: '', department_id: '', location: '' });
 
   const [viewAsset, setViewAsset] = useState<any>(null);
+
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     asset_id: '', name: '', category_id: '', department_id: '',
@@ -76,21 +79,29 @@ export default function Assets() {
     a.click();
   };
 
-  // Handle New Asset Creation
+// Handle New Asset Creation & Updating
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {
-        method: 'POST',
+      const url = editingId 
+        ? `https://asset-mgt-ewkj.onrender.com/api/assets/${editingId}` 
+        : 'https://asset-mgt-ewkj.onrender.com/api/assets';
+        
+      const method = editingId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
       if (res.ok) {
         setIsModalOpen(false);
+        setEditingId(null);
         setFormData({ asset_id: '', name: '', category_id: '', department_id: '', location: '', condition: 'New', status: 'Available' });
         fetchData();
       } else {
-        alert("Failed to create asset. Ensure Asset ID is unique!");
+        alert(editingId ? "Failed to update asset." : "Failed to create asset. Ensure Asset ID is unique!");
       }
     } catch (err) {
       console.error(err);
@@ -114,6 +125,28 @@ export default function Assets() {
       }
     } catch (err) {
       console.error(err);
+    }
+  };
+
+// Handle Asset Deletion
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    
+    try {
+      const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${deleteId}`, {
+        method: 'DELETE',
+      });
+      
+      if (res.ok) {
+        fetchData(); // Refresh the table automatically
+        setDeleteId(null); // Close the modal
+      } else {
+        alert("Failed to delete asset. It might be assigned to a maintenance record.");
+        setDeleteId(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setDeleteId(null);
     }
   };
 
@@ -187,8 +220,32 @@ export default function Assets() {
                   <button onClick={() => setQrAsset(asset)} className="text-gray-400 hover:text-ui-blue cursor-pointer transition-colors" title="View QR Code">
                     <QrCode className="w-4 h-4 inline" />
                   </button>
-                  <button className="text-gray-400 hover:text-blue-600 cursor-pointer transition-colors"><Edit className="w-4 h-4 inline" /></button>
-                  <button className="text-gray-400 hover:text-red-600 cursor-pointer transition-colors"><Trash2 className="w-4 h-4 inline" /></button>
+                  <button 
+                    onClick={() => {
+                      setEditingId((asset as any).id); 
+                      setFormData({
+                        asset_id: asset.asset_id,
+                        name: asset.name,
+                        category_id: (asset as any).category_id || '',
+                        department_id: (asset as any).department_id || '',
+                        location: (asset as any).location || '',
+                        condition: asset.condition || 'New',
+                        status: asset.status || 'Available'
+                      });
+                      setIsModalOpen(true);
+                    }}
+                    className="text-gray-400 hover:text-blue-600 cursor-pointer transition-colors"
+                    title="Edit Asset"
+                  >
+                    <Edit className="w-4 h-4 inline" />
+                  </button>
+                  <button 
+                    onClick={() => setDeleteId((asset as any).id)} 
+                    className="text-gray-400 hover:text-red-600 cursor-pointer transition-colors"
+                    title="Delete Asset"
+                  >
+                    <Trash2 className="w-4 h-4 inline" />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -264,14 +321,28 @@ export default function Assets() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Register New Asset</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600 cursor-pointer"><X className="w-5 h-5" /></button>
+              <h3 className="text-lg font-bold text-gray-900">
+                {editingId ? 'Edit Asset' : 'Register New Asset'}
+              </h3>
+              <button 
+                onClick={() => { setIsModalOpen(false); setEditingId(null); }} 
+                className="text-gray-400 hover:text-gray-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Asset Tag ID</label>
-                <input required type="text" className="mt-1 w-full border border-gray-300 rounded-md p-2" placeholder="e.g. UIB-FUR-001"
-                  value={formData.asset_id} onChange={e => setFormData({...formData, asset_id: e.target.value})} />
+                <input 
+                  required 
+                  disabled={!!editingId}
+                  type="text" 
+                  className={`mt-1 w-full border border-gray-300 rounded-md p-2 ${editingId ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`} 
+                  placeholder="e.g. UIB-FUR-001"
+                  value={formData.asset_id} 
+                  onChange={e => setFormData({...formData, asset_id: e.target.value})} 
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Asset Name</label>
@@ -389,6 +460,34 @@ export default function Assets() {
                   <span className="text-sm text-gray-500">Location</span>
                   <span className="text-gray-800">{viewAsset.location || 'N/A'}</span>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* Custom Delete Confirmation Modal */}
+        {deleteId && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden p-6 text-center transform transition-all">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-100">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Asset?</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to delete this asset? This action cannot be undone and will permanently remove it from the database.
+              </p>
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setDeleteId(null)}
+                  className="flex-1 bg-gray-100 text-gray-800 font-semibold py-2.5 rounded-xl hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDelete}
+                  className="flex-1 bg-red-600 text-white font-semibold py-2.5 rounded-xl hover:bg-red-700 transition-colors shadow-sm"
+                >
+                  Yes, Delete
+                </button>
               </div>
             </div>
           </div>

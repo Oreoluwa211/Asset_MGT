@@ -61,7 +61,14 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <XAxis 
+                  dataKey="name" 
+                  interval={0} 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={70} 
+                  tick={{ fontSize: 11, fill: '#6b7280' }} 
+                />
                 <YAxis axisLine={false} tickLine={false} allowDecimals={false} />
                 <Tooltip cursor={{ fill: '#f3f4f6' }} />
                 <Bar dataKey="count" fill="#800020" radius={[4, 4, 0, 0]} />

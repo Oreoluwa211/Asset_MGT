@@ -335,6 +335,33 @@ app.get('/api/dashboard', async (req: Request, res: Response) => {
 
 
 // --- ASSIGNMENT ROUTE ---
+
+// Update an existing asset's details
+app.put('/api/assets/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const { name, category_id, department_id, location, condition, status } = req.body;
+
+    const updatedAsset = await prisma.asset.update({
+      where: { id: id },
+      data: {
+        name,
+        // Convert empty strings from the frontend dropdowns to null for the database
+        category_id: category_id === '' ? null : category_id,
+        department_id: department_id === '' ? null : department_id,
+        location,
+        condition,
+        status
+      }
+    });
+
+    res.status(200).json(updatedAsset);
+  } catch (error) {
+    console.error('Error updating asset:', error);
+    res.status(500).json({ error: 'Failed to update asset' });
+  }
+});
+
 app.post('/api/assets/:id/assign', async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string; // Explicitly tell TypeScript this is a single string
