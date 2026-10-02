@@ -89,3 +89,12 @@ model Maintenance {
 
   asset        Asset     @relation(fields: [asset_id], references: [id])
 }
+
+model AssetHistory {
+  id         String   @id @default(uuid())
+  asset_id   String
+  action     String   // e.g., "Created", "Updated", "Assigned"
+  details    String   // e.g., "Status changed from Available to In Use"
+  changed_by String   @default("System Admin") // Real-world: Use JWT User ID
+  created_at DateTime @default(now())
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan, FileSpreadsheet } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan, FileSpreadsheet, Eye } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Scanner } from '@yudiel/react-qr-scanner';
 
@@ -17,6 +17,8 @@ export default function Assets() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   
+  const [assetHistory, setAssetHistory] = useState<any[]>([]);
+
   // Modals State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
@@ -214,6 +216,19 @@ export default function Assets() {
                 </td>
                 <td className="px-6 py-4 text-right space-x-3">
                   {/* Assign Button */}
+                  <button 
+                    onClick={() => {
+                      setViewAsset(asset);
+                      // Fetch history for this asset
+                      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${(asset as any).id}/history`)
+                        .then(res => res.json())
+                        .then(data => setAssetHistory(data));
+                    }} 
+                    className="text-gray-400 hover:text-gray-900 cursor-pointer transition-colors" 
+                    title="View Details"
+                  >
+                    <Eye className="w-4 h-4 inline" />
+                  </button>
                   <button onClick={() => setAssignAsset(asset)} className="text-gray-400 hover:text-green-600 cursor-pointer transition-colors" title="Assign Asset">
                     <UserPlus className="w-4 h-4 inline" />
                   </button>
@@ -453,12 +468,47 @@ export default function Assets() {
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Assigned Staff</span>
+                  <span className="text-gray-900 font-medium">
+                    {/* Match the assigned staff ID to the staffList array */}
+                    {viewAsset.assigned_to 
+                      ? staffList.find((s: any) => s.id === viewAsset.assigned_to || s.staff_id === viewAsset.assigned_to)?.name || 'Unknown Staff' 
+                      : <span className="text-gray-400 italic">Unassigned</span>
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                   <span className="text-sm text-gray-500">Department</span>
                   <span className="text-gray-800">{viewAsset.department?.name || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between items-center pb-3 border-b border-gray-100">
                   <span className="text-sm text-gray-500">Location</span>
                   <span className="text-gray-800">{viewAsset.location || 'N/A'}</span>
+                </div>
+                {/* Audit History Timeline */}
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <h4 className="text-sm font-bold text-gray-900 mb-4">Audit History</h4>
+                  <div className="space-y-4 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                    {assetHistory.length > 0 ? (
+                      assetHistory.map((log, index) => (
+                        <div key={index} className="flex gap-3">
+                          <div className="flex flex-col items-center">
+                            <div className="w-2 h-2 rounded-full bg-ui-blue mt-1.5"></div>
+                            {index !== assetHistory.length - 1 && <div className="w-0.5 h-full bg-gray-100 mt-1"></div>}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800">{log.action}</p>
+                            <p className="text-xs text-gray-500 mb-0.5">{log.details}</p>
+                            <p className="text-[10px] text-gray-400 font-mono">
+                              {new Date(log.created_at).toLocaleString()} • by {log.changed_by}
+                            </p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-xs text-gray-400 italic">No history recorded yet.</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

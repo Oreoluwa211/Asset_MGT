@@ -1,12 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, Package, Users, Building, Wrench, FileSpreadsheet, Settings, LogOut, Menu, X, Search } from 'lucide-react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/AuthContext';
+
 
 export default function DashboardLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  // Fetch matches dynamically
+  useEffect(() => {
+    if (searchQuery.length > 1) {
+      fetch('https://asset-mgt-ewkj.onrender.com/api/assets')
+        .then(res => res.json())
+        .then(data => {
+          const filtered = data.filter((a: any) => 
+            a.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            a.asset_id.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+          setSearchResults(filtered.slice(0, 5)); // Limit to top 5 results
+        });
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
 
   const handleLogout = () => {
     logout();
@@ -97,20 +118,45 @@ export default function DashboardLayout() {
             </div>
           </div>
 
-          {/* Search Bar - Better Mobile Sizing */}
-          <div className="flex-1 max-w-2xl px-2 sm:px-8">
+          {/* Center: Live Global Search Bar */}
+          <div className="flex-1 max-w-2xl px-2 sm:px-8 relative z-50">
             <div className="relative group">
               <input
                 type="text"
                 placeholder="Search assets..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)} // Timeout allows clicking results
                 className="w-full bg-gray-100/50 border border-gray-200 text-sm rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:bg-white focus:ring-2 focus:ring-ui-blue/30 focus:border-ui-blue transition-all shadow-inner"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    window.location.href = `/assets?search=${encodeURIComponent(e.currentTarget.value)}`;
-                  }
+                  if (e.key === 'Enter') window.location.href = `/assets?search=${encodeURIComponent(searchQuery)}`;
                 }}
               />
               <Search className="w-4 h-4 text-gray-400 absolute left-4 top-3 group-focus-within:text-ui-blue" />
+              
+              {/* Live Dropdown Results */}
+              {isSearchFocused && searchQuery.length > 1 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden">
+                  {searchResults.length > 0 ? (
+                    <ul className="py-2">
+                      {searchResults.map(asset => (
+                        <li key={asset.id}>
+                          <a 
+                            href={`/assets?search=${asset.asset_id}`}
+                            className="block px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                          >
+                            <div className="font-semibold text-gray-800 text-sm">{asset.name}</div>
+                            <div className="text-xs text-ui-blue font-mono mt-0.5">{asset.asset_id} • {asset.status}</div>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="p-4 text-sm text-gray-500 text-center">No assets found for "{searchQuery}"</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

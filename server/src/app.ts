@@ -333,6 +333,18 @@ app.get('/api/dashboard', async (req: Request, res: Response) => {
   }
 });
 
+// Fetch the audit history for a specific asset
+app.get('/api/assets/:id/history', async (req: Request, res: Response) => {
+  try {
+    const history = await prisma.assetHistory.findMany({
+      where: { asset_id: req.params.id as string }, // <-- Add "as string" here
+      orderBy: { created_at: 'desc' }
+    });
+    res.json(history);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
 
 // --- ASSIGNMENT ROUTE ---
 
@@ -352,6 +364,15 @@ app.put('/api/assets/:id', async (req: Request, res: Response) => {
         location,
         condition,
         status
+      }
+    });
+
+    // Add to History Log
+    await prisma.assetHistory.create({
+      data: {
+        asset_id: id,
+        action: 'Updated',
+        details: 'Asset information was modified.'
       }
     });
 
@@ -391,6 +412,15 @@ app.post('/api/assets/:id/assign', async (req: Request, res: Response) => {
         department_id,
         location,
         status: 'In Use' // Automatically mark it as In Use
+      }
+    });
+
+    // Add to History Log
+    await prisma.assetHistory.create({
+      data: {
+        asset_id: id,
+        action: 'Assigned',
+        details: `Assigned to Location: ${location}`
       }
     });
 
