@@ -219,10 +219,51 @@ app.post('/api/maintenance', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to log maintenance' });
   }
 });
+// PATCH/PUT: Resolve a maintenance record and release the asset
+app.put('/api/maintenance/:id/resolve', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
 
+    // 1. Find the maintenance ticket to get the linked asset
+    const record = await prisma.maintenance.findUnique({
+      where: { id: id }
+    });
 
-  // --- STAFF EDIT & DELETE ---
-// --- STAFF EDIT ---
+    if (!record) {
+      return res.status(404).json({ error: 'Maintenance record not found' });
+    }
+
+    // 2. Mark maintenance as Resolved
+    const updatedRecord = await prisma.maintenance.update({
+      where: { id: id },
+      data: { status: 'Resolved' }
+    });
+
+    // 3. Set asset status back to 'Available'
+    if (record.asset_id) {
+      await prisma.asset.update({
+        where: { id: record.asset_id },
+        data: { status: 'Available' }
+      });
+
+      // 4. Log to history
+      await prisma.assetHistory.create({
+        data: {
+          asset_id: record.asset_id,
+          action: 'Maintenance Resolved',
+          details: `Issue resolved: ${record.problem || 'Repairs completed'}`
+        }
+      });
+    }
+
+    res.status(200).json(updatedRecord);
+  } catch (error) {
+    console.error('Error resolving maintenance:', error);
+    res.status(500).json({ error: 'Failed to resolve maintenance issue' });
+  }
+});
+
+// --- STAFF EDIT & DELETE ---
 app.put('/api/staff/:id', async (req: Request, res: Response) => {
   try {
     const staffId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -237,56 +278,78 @@ app.put('/api/staff/:id', async (req: Request, res: Response) => {
 });
 
 // --- SMART STAFF DELETE (Releases Assets) ---
-  app.delete('/api/staff/:id', async (req: Request, res: Response) => {
-    try {
-      const staffId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-      const staff = await prisma.staff.findUnique({ where: { id: staffId } });
-      
-      if (staff) {
-        // 1. Free up any assets assigned to this staff member
-        await prisma.asset.updateMany({
-          where: { assigned_to: staffId },
-          data: { assigned_to: null, status: 'Available' }
-        });
+app.delete('/api/staff/:id', async (req: Request, res: Response) => {
+  try {
+    const staffId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const staff = await prisma.staff.findUnique({ where: { id: staffId } });
+    
+    if (staff) {
+      // 1. Free up any assets assigned to this staff member
+      await prisma.asset.updateMany({
+        where: { assigned_to: staffId },
+        data: { assigned_to: null, status: 'Available' }
+      });
 
-        // 2. Close any active assignment history records
-        await prisma.assignment.updateMany({
-          where: { staff_id: staffId, ended_at: null },
-          data: { ended_at: new Date() }
-        });
+      // 2. Close any active assignment history records
+      await prisma.assignment.updateMany({
+        where: { staff_id: staffId, ended_at: null },
+        data: { ended_at: new Date() }
+      });
 
-        // 3. Delete the physical Staff record
-        await prisma.staff.delete({ where: { id: staffId } });
+      // 3. Delete the physical Staff record
+      await prisma.staff.delete({ where: { id: staffId } });
 
-        // 4. Delete their User login account so they can no longer log in
-        await prisma.user.deleteMany({ where: { email: staff.email, role: 'Staff' } });
-      }
-      
-      res.json({ message: 'Staff deleted, account removed, and assets successfully released.' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Failed to delete staff member.' });
+      // 4. Delete their User login account so they can no longer log in
+      await prisma.user.deleteMany({ where: { email: staff.email, role: 'Staff' } });
     }
-  });
+    
+    res.json({ message: 'Staff deleted, account removed, and assets successfully released.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to delete staff member.' });
+  }
+});
 
-  // --- DEPARTMENT EDIT & DELETE ---
-  app.put('/api/departments/:id', async (req: Request, res: Response) => {
-    try {
-      const updatedDept = await prisma.department.update({ where: { id: String(req.params.id) }, data: req.body });
-      res.json(updatedDept);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to update department' });
-    }
-  });
+// --- DEPARTMENT EDIT & DELETE ---
+app.put('/api/departments/:id', async (req: Request, res: Response) => {
+  try {
+    const updatedDept = await prisma.department.update({ where: { id: String(req.params.id) }, data: req.body });
+    res.json(updatedDept);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update department' });
+  }
+});
 
-  app.delete('/api/departments/:id', async (req: Request, res: Response) => {
-    try {
-      await prisma.department.delete({ where: { id: String(req.params.id) } });
-      res.json({ message: 'Department deleted successfully' });
-    } catch (error) {
-      res.status(400).json({ error: 'Cannot delete department. It contains assigned staff or assets.' });
-    }
-  });
+app.delete('/api/departments/:id', async (req: Request, res: Response) => {
+  try {
+    await prisma.department.delete({ where: { id: String(req.params.id) } });
+    res.json({ message: 'Department deleted successfully' });
+  } catch (error) {
+    res.status(400).json({ error: 'Cannot delete department. It contains assigned staff or assets.' });
+  }
+});
+
+// DELETE: Delete an asset and clean up its references
+app.delete('/api/assets/:id', async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    // 1. Delete associated child records first to satisfy foreign key constraints
+    await prisma.assetHistory.deleteMany({ where: { asset_id: id } });
+    await prisma.assignment.deleteMany({ where: { asset_id: id } });
+    await prisma.maintenance.deleteMany({ where: { asset_id: id } });
+
+    // 2. Safely delete the asset itself
+    await prisma.asset.delete({
+      where: { id: id }
+    });
+
+    res.status(200).json({ message: 'Asset and related records deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting asset:', error);
+    res.status(500).json({ error: 'Failed to delete asset' });
+  }
+});
 
 // --- DASHBOARD & REPORTS ROUTES ---
 app.get('/api/dashboard', async (req: Request, res: Response) => {
