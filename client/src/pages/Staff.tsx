@@ -6,7 +6,7 @@ export default function Staff() {
   const [staff, setStaff] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{id: string, name: string} | null>(null);
