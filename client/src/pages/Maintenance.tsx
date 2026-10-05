@@ -29,10 +29,13 @@ export default function Maintenance() {
   const fetchData = () => {
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
     
+    const headers = { 'Authorization': `Bearer ${(user as any)?.token}` };
+    
     Promise.all([
-      fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance${query}`).then(res => res.json()),
-      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets${query}`).then(res => res.json())
-    ]).then(([maintenanceData, assetsData]) => {
+      fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance${query}`, { headers }).then(res => res.json()),
+      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets${query}`, { headers }).then(res => res.json())
+    ])
+    .then(([maintenanceData, assetsData]) => {
       setRecords(Array.isArray(maintenanceData) ? maintenanceData : []);
       // Only show assets that are NOT already in maintenance for the dropdown
       setAssets(Array.isArray(assetsData) ? assetsData.filter(a => a.status !== 'Maintenance') : []);

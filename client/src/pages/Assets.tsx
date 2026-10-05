@@ -90,10 +90,10 @@ export default function Assets() {
 
   const fetchData = () => {
     Promise.all([
-      fetch('https://asset-mgt-ewkj.onrender.com/api/assets').then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/categories').then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json())
+      fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/categories', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/staff', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json())
     ]).then(([assetsData, deptsData, catsData, staffData]) => {
       setAssets(assetsData);
       setDepartments(deptsData);
@@ -187,6 +187,10 @@ export default function Assets() {
     try {
       const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${deleteId}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(user as any)?.token}`
+        }
       });
       
       if (res.ok) {
@@ -270,7 +274,7 @@ export default function Assets() {
                     onClick={() => {
                       setViewAsset(asset);
                       // Fetch history for this asset
-                      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${(asset as any).id}/history`)
+                      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${(asset as any).id}/history`, {headers: {'Authorization': `Bearer ${(user as any)?.token}`}})
                         .then(res => res.json())
                         .then(data => setAssetHistory(data));
                     }} 

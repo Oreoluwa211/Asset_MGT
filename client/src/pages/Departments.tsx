@@ -12,10 +12,12 @@ export default function Departments() {
   const { user } = useAuth();
 
   const fetchDepartments = () => {
-    fetch('https://asset-mgt-ewkj.onrender.com/api/departments')
-      .then(res => res.json())
-      .then(data => { setDepartments(data); setLoading(false); });
-  };
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments', {
+        headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+      })
+        .then(res => res.json())
+        .then(data => { setDepartments(data); setLoading(false); });
+    };
 
   useEffect(() => { fetchDepartments(); }, []);
 
@@ -34,7 +36,10 @@ export default function Departments() {
 
   const handleDelete = async () => {
     if (!deleteModal) return;
-    const res = await fetch(`/api/departments/${deleteModal.id}`, { method: 'DELETE' });
+    const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/departments/${deleteModal.id}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+    });
     if (res.ok) {
       setDeleteModal(null);
       setErrorMsg('');

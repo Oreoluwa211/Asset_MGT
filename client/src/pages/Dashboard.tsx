@@ -13,11 +13,29 @@ export default function Dashboard() {
 
   const { user } = useAuth()
   useEffect(() => {
+    if (!user) return;
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
-    fetch(`https://asset-mgt-ewkj.onrender.com/api/dashboard${query}`)
-      .then((res) => res.json())
-      .then((fetchedData) => {
-        setData(fetchedData);
+    fetch(`https://asset-mgt-ewkj.onrender.com/api/dashboard${query}`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${(user as any)?.token}`
+      }
+    })
+      
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch dashboard data');
+        return res.json();
+      })
+
+      .then(fetchedData => {
+        // Safely set the bundled state
+        if (fetchedData && fetchedData.stats) {
+          setData({
+            stats: fetchedData.stats,
+            recentAssets: fetchedData.recentAssets || [],
+            chartData: fetchedData.chartData || []
+          });
+        }
         setLoading(false);
       })
       .catch(err => {

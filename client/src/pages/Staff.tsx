@@ -14,10 +14,11 @@ export default function Staff() {
   const [formData, setFormData] = useState({ id: '', staff_id: '', name: '', email: '', department_id: '', position: '' });
   const [errorMsg, setErrorMsg] = useState('');
 
-  const fetchData = () => {
+const fetchData = () => {
+    const headers = { 'Authorization': `Bearer ${(user as any)?.token}` };
     Promise.all([
-      fetch('https://asset-mgt-ewkj.onrender.com/api/staff').then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/departments').then(res => res.json())
+      fetch('https://asset-mgt-ewkj.onrender.com/api/staff', { headers }).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments', { headers }).then(res => res.json())
     ]).then(([staffData, deptsData]) => {
       setStaff(staffData); 
       setDepartments(deptsData); 
@@ -44,7 +45,10 @@ export default function Staff() {
 
   const handleDelete = async () => {
     if (!deleteModal) return;
-    const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/staff/${deleteModal.id}`, { method: 'DELETE' });
+    const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/staff/${deleteModal.id}`, { 
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+    });
     if (res.ok) {
       setDeleteModal(null);
       setErrorMsg('');

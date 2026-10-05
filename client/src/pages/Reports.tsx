@@ -1,18 +1,23 @@
 import { useState, useEffect } from 'react';
 import { FileSpreadsheet, Download } from 'lucide-react';
+import { useAuth } from '../hooks/AuthContext';
 
 export default function Reports() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetch('https://asset-mgt-ewkj.onrender.com/api/assets')
+    if (!user) return;
+    fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {
+      headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+    })
       .then(res => res.json())
       .then(data => {
         setAssets(data);
         setLoading(false);
       });
-  }, []);
+  }, [user]);
 
   const downloadCSV = () => {
     // 1. Create CSV Headers
