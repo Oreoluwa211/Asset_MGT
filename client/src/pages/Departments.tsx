@@ -9,7 +9,7 @@ export default function Departments() {
   const [deleteModal, setDeleteModal] = useState<{id: string, name: string} | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', faculty: '' });
   const [errorMsg, setErrorMsg] = useState('');
-  const { user, token } = useAuth();
+  const { token } = useAuth();
 
   const fetchDepartments = () => {
       fetch('https://asset-mgt-ewkj.onrender.com/api/departments', {

@@ -10,7 +10,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { user, token } = useAuth();
+  const { token } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

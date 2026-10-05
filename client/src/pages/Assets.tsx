@@ -65,7 +65,7 @@ export default function Assets() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const { user, token } = useAuth();
+  const { token } = useAuth();
   
   const [assetHistory, setAssetHistory] = useState<any[]>([]);
 
