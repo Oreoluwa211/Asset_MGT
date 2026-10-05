@@ -10,6 +10,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,7 +18,7 @@ export default function Login() {
     try {
       const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
         body: JSON.stringify({ email, password })
       });
       const data = await res.json();

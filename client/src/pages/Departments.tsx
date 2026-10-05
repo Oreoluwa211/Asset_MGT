@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Building, Plus, X, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../hooks/AuthContext';
 
 export default function Departments() {
   const [departments, setDepartments] = useState<any[]>([]);
@@ -8,6 +9,7 @@ export default function Departments() {
   const [deleteModal, setDeleteModal] = useState<{id: string, name: string} | null>(null);
   const [formData, setFormData] = useState({ id: '', name: '', faculty: '' });
   const [errorMsg, setErrorMsg] = useState('');
+  const { user } = useAuth();
 
   const fetchDepartments = () => {
     fetch('https://asset-mgt-ewkj.onrender.com/api/departments')
@@ -23,7 +25,7 @@ export default function Departments() {
     const method = formData.id ? 'PUT' : 'POST';
     
     await fetch(url, {
-      method, headers: { 'Content-Type': 'application/json' },
+      method, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
       body: JSON.stringify({ name: formData.name, faculty: formData.faculty })
     });
     setIsModalOpen(false);

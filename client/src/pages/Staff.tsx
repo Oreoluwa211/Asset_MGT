@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Users, Plus, X, Edit, Trash2, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../hooks/AuthContext';
 
 export default function Staff() {
   const [staff, setStaff] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{id: string, name: string} | null>(null);
@@ -32,7 +34,7 @@ export default function Staff() {
     
     await fetch(url, {
       method, 
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
       body: JSON.stringify(formData)
     });
     

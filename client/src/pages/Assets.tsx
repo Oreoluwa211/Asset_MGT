@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan, FileSpreadsheet, Eye } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X, QrCode, Printer, UserPlus, Scan, FileSpreadsheet, Eye, ChevronDown } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Scanner } from '@yudiel/react-qr-scanner';
+import { useAuth } from '../hooks/AuthContext';
 
 interface Asset {
   id: string; asset_id: string; name: string;
@@ -9,6 +10,54 @@ interface Asset {
   condition: string; status: string;
 }
 
+// Premium Custom Dropdown Component
+const CustomSelect = ({ value, onChange, options, placeholder, disabled = false }: any) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find((opt: any) => opt.id === value);
+
+  return (
+    <div className="relative w-full">
+      <div
+        onClick={() => !disabled && setIsOpen(!isOpen)}
+        className={`w-full border border-gray-300 rounded-xl p-2.5 flex justify-between items-center transition-all shadow-sm ${
+          disabled ? 'bg-gray-100 cursor-not-allowed opacity-70' : 'bg-white cursor-pointer hover:border-ui-blue focus:ring-2 focus:ring-ui-blue/20'
+        }`}
+      >
+        <span className={selectedOption ? "text-gray-900 font-medium" : "text-gray-400"}>
+          {selectedOption ? selectedOption.name : placeholder}
+        </span>
+        <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-ui-blue' : ''}`} />
+      </div>
+      
+      {isOpen && (
+        <>
+          {/* Invisible overlay to detect clicks outside the dropdown */}
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
+          
+          {/* Dropdown Menu */}
+          <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-xl max-h-60 overflow-y-auto py-2 custom-scrollbar transform origin-top animate-in fade-in slide-in-from-top-2">
+            {options.map((opt: any) => (
+              <div
+                key={opt.id}
+                onClick={() => {
+                  onChange(opt.id);
+                  setIsOpen(false);
+                }}
+                className={`px-4 py-2.5 cursor-pointer transition-colors flex items-center ${
+                  value === opt.id 
+                    ? 'bg-blue-50 text-ui-blue font-bold border-l-4 border-ui-blue' 
+                    : 'text-gray-700 hover:bg-gray-50 border-l-4 border-transparent'
+                }`}
+              >
+                {opt.name}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 export default function Assets() {
   const [assets, setAssets] = useState<Asset[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
@@ -16,6 +65,7 @@ export default function Assets() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
   
   const [assetHistory, setAssetHistory] = useState<any[]>([]);
 
@@ -93,7 +143,7 @@ export default function Assets() {
 
       const res = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
         body: JSON.stringify(formData)
       });
 
@@ -117,7 +167,7 @@ export default function Assets() {
     try {
       const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${assignAsset.id}/assign`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
         body: JSON.stringify(assignData)
       });
       if (res.ok) {
@@ -330,7 +380,6 @@ export default function Assets() {
         </div>
       )}
 
-      {/* Add Asset Modal (Kept mostly unchanged, omitted for brevity but it stays in your code!) */}
       {/* Add Asset Modal (Hidden for brevity, keep your existing logic here) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -366,32 +415,24 @@ export default function Assets() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <div className="space-y-1">
-                    <label className="block text-sm font-medium text-gray-700">Category</label>
-                    <select 
-                      required 
-                      className="mt-1 w-full border border-gray-300 rounded-md p-2.5 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm appearance-none"
-                      style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1em' }}
-                      value={formData.category_id} 
-                      onChange={e => setFormData({...formData, category_id: e.target.value})}
-                    >
-                      <option value="" disabled>Select Category...</option>
-                      {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                    </select>
-                  </div>
+                  <div className="space-y-1.5">
+                  <label className="block text-sm font-semibold text-gray-700">Category</label>
+                  <CustomSelect 
+                    value={formData.category_id}
+                    onChange={(val: string) => setFormData({...formData, category_id: val})}
+                    options={categories}
+                    placeholder="Select Category..."
+                  />
                 </div>
-                <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Department</label>
-                  <select 
-                    required 
-                    className="mt-1 w-full border border-gray-300 rounded-md p-2.5 bg-white text-gray-700 outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all shadow-sm appearance-none"
-                    style={{ backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1em' }}
-                    value={formData.department_id} 
-                    onChange={e => setFormData({...formData, department_id: e.target.value})}
-                  >
-                    <option value="" disabled>Select Department...</option>
-                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="block text-sm font-semibold text-gray-700">Department</label>
+                  <CustomSelect 
+                    value={formData.department_id}
+                    onChange={(val: string) => setFormData({...formData, department_id: val})}
+                    options={departments}
+                    placeholder="Select Department..."
+                  />
                 </div>
               </div>
               <div>
@@ -406,7 +447,6 @@ export default function Assets() {
           </div>
         </div>
       )}
-      {/* Ensure you keep the existing Add Asset Modal at the bottom here exactly as it was! */}
       {/* In-App Camera Scanner Modal */}
         {isScannerOpen && (
           <div className="fixed inset-0 bg-black/90 flex flex-col items-center justify-center z-50 p-4">
@@ -424,12 +464,11 @@ export default function Assets() {
                   onScan={(result) => {
                     if (result && result.length > 0) {
                       const scannedId = result[0].rawValue;
-                      // Search the currently loaded assets for the matching ID
                       const found = assets.find((a: any) => a.asset_id === scannedId);
                       
                       if (found) {
-                        setIsScannerOpen(false); // Close camera
-                        setViewAsset(found);     // Open details modal
+                        setIsScannerOpen(false);
+                        setViewAsset(found);
                       } else {
                         alert(`Scanned ID: ${scannedId} not found in current database.`);
                       }
@@ -545,30 +584,3 @@ export default function Assets() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      

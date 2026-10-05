@@ -52,7 +52,7 @@ export default function Maintenance() {
     try {
       const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/maintenance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
         body: JSON.stringify(formData)
       });
       
@@ -71,7 +71,8 @@ export default function Maintenance() {
   const handleResolve = async (id: string) => {
     try {
       const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance/${id}/resolve`, {
-        method: 'PUT'
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
       });
       if (res.ok) {
         fetchData();

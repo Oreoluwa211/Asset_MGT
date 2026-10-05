@@ -18,6 +18,33 @@ app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ui-asset-mgt-super-secret-key';
 
+// --- JWT AUTHENTICATION MIDDLEWARE ---
+export interface AuthRequest extends Request {
+  user?: any;
+}
+
+// 1. Verifies if the user is logged in
+const authenticateToken = (req: AuthRequest, res: Response, next: express.NextFunction) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Format: "Bearer <token>"
+
+  if (!token) return res.status(401).json({ error: 'Access Denied: No Token Provided' });
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) return res.status(403).json({ error: 'Invalid or Expired Token' });
+    req.user = user;
+    next();
+  });
+};
+
+// 2. Verifies if the user is an Admin
+const isAdmin = (req: AuthRequest, res: Response, next: express.NextFunction) => {
+  if (req.user?.role !== 'Admin') {
+    return res.status(403).json({ error: 'Access Denied: Admins Only' });
+  }
+  next();
+};
+
 // --- INITIALIZE DEFAULT ADMIN ---
 async function initializeAdmin() {
   const adminExists = await prisma.user.findFirst({ where: { role: 'Admin' } });
@@ -54,7 +81,33 @@ app.post('/api/auth/login', async (req: Request, res: Response): Promise<any> =>
   }
 });
 
+// --- CHANGE PASSWORD ROUTE ---
+app.put('/api/auth/change-password', authenticateToken, async (req: AuthRequest, res: Response): Promise<any> => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    const userId = req.user.id;
 
+    // 1. Find user
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 2. Verify old password
+    const isValid = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!isValid) return res.status(400).json({ error: 'Incorrect current password' });
+
+    // 3. Hash and save new password
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password_hash: newHash }
+    });
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ error: 'Server error updating password' });
+  }
+});
 
 app.use(cors());
 app.use(express.json());
@@ -65,7 +118,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // --- ASSET ROUTES ---
-app.get('/api/assets', async (req: Request, res: Response) => {
+app.get('/api/assets', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const { email } = req.query;
     let whereClause: any = {};
@@ -88,7 +141,7 @@ app.get('/api/assets', async (req: Request, res: Response) => {
 });
 
 // --- CATEGORY ROUTES ---
-app.get('/api/categories', async (req: Request, res: Response) => {
+app.get('/api/categories', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const categories = await prisma.category.findMany();
     res.json(categories);
@@ -98,7 +151,7 @@ app.get('/api/categories', async (req: Request, res: Response) => {
 });
 
 // --- CREATE ASSET ROUTE ---
-app.post('/api/assets', async (req: Request, res: Response) => {
+app.post('/api/assets', authenticateToken, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const newAsset = await prisma.asset.create({
       data: req.body,
@@ -112,7 +165,7 @@ app.post('/api/assets', async (req: Request, res: Response) => {
 });
 
 // --- STAFF ROUTES ---
-app.get('/api/staff', async (req: Request, res: Response) => {
+app.get('/api/staff', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const staff = await prisma.staff.findMany({
       include: { department: true }
@@ -124,7 +177,7 @@ app.get('/api/staff', async (req: Request, res: Response) => {
 });
 
 // --- DEPARTMENT ROUTES ---
-app.get('/api/departments', async (req: Request, res: Response) => {
+app.get('/api/departments', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const departments = await prisma.department.findMany();
     res.json(departments);
@@ -134,7 +187,7 @@ app.get('/api/departments', async (req: Request, res: Response) => {
 });
 
 // --- STAFF POST ROUTE (With Automatic User Creation) ---
-app.post('/api/staff', async (req: Request, res: Response) => {
+app.post('/api/staff', authenticateToken, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const { staff_id, name, email, department_id, position } = req.body;
     
@@ -157,7 +210,7 @@ app.post('/api/staff', async (req: Request, res: Response) => {
 });
 
 // --- DEPARTMENT POST ROUTE ---
-app.post('/api/departments', async (req: Request, res: Response) => {
+app.post('/api/departments',authenticateToken, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const newDept = await prisma.department.create({
       data: req.body
@@ -169,7 +222,7 @@ app.post('/api/departments', async (req: Request, res: Response) => {
 });
 
 // --- MAINTENANCE ROUTES ---
-app.get('/api/maintenance', async (req: Request, res: Response) => {
+app.get('/api/maintenance', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
     const { email } = req.query;
     let whereClause: any = {};
@@ -192,7 +245,7 @@ app.get('/api/maintenance', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/maintenance', async (req: Request, res: Response) => {
+app.post('/api/maintenance', authenticateToken, async (req: Request, res: Response) => {
   try {
     const { asset_id, problem, technician, cost } = req.body;
     
@@ -220,7 +273,7 @@ app.post('/api/maintenance', async (req: Request, res: Response) => {
   }
 });
 // PATCH/PUT: Resolve a maintenance record and release the asset
-app.put('/api/maintenance/:id/resolve', async (req: Request, res: Response) => {
+app.put('/api/maintenance/:id/resolve',authenticateToken, async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
 
@@ -264,7 +317,7 @@ app.put('/api/maintenance/:id/resolve', async (req: Request, res: Response) => {
 });
 
 // --- STAFF EDIT & DELETE ---
-app.put('/api/staff/:id', async (req: Request, res: Response) => {
+app.put('/api/staff/:id', authenticateToken, isAdmin, async (req: Request, res: Response) => {
   try {
     const staffId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const updatedStaff = await prisma.staff.update({ 
@@ -278,7 +331,7 @@ app.put('/api/staff/:id', async (req: Request, res: Response) => {
 });
 
 // --- SMART STAFF DELETE (Releases Assets) ---
-app.delete('/api/staff/:id', async (req: Request, res: Response) => {
+app.delete('/api/staff/:id', authenticateToken, isAdmin, async (req: Request, res: Response) => {
   try {
     const staffId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const staff = await prisma.staff.findUnique({ where: { id: staffId } });
@@ -311,7 +364,7 @@ app.delete('/api/staff/:id', async (req: Request, res: Response) => {
 });
 
 // --- DEPARTMENT EDIT & DELETE ---
-app.put('/api/departments/:id', async (req: Request, res: Response) => {
+app.put('/api/departments/:id', authenticateToken, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const updatedDept = await prisma.department.update({ where: { id: String(req.params.id) }, data: req.body });
     res.json(updatedDept);
@@ -330,7 +383,7 @@ app.delete('/api/departments/:id', async (req: Request, res: Response) => {
 });
 
 // DELETE: Delete an asset and clean up its references
-app.delete('/api/assets/:id', async (req: Request, res: Response) => {
+app.delete('/api/assets/:id', authenticateToken, isAdmin, async (req: AuthRequest, res: Response) => {
   try {
     const id = req.params.id as string;
 
@@ -352,7 +405,7 @@ app.delete('/api/assets/:id', async (req: Request, res: Response) => {
 });
 
 // --- DASHBOARD & REPORTS ROUTES ---
-app.get('/api/dashboard', async (req: Request, res: Response) => {
+app.get('/api/dashboard', authenticateToken, async (req: Request, res: Response) => {
   try {
     const { email } = req.query;
     let assetWhere: any = {};
@@ -397,7 +450,7 @@ app.get('/api/dashboard', async (req: Request, res: Response) => {
 });
 
 // Fetch the audit history for a specific asset
-app.get('/api/assets/:id/history', async (req: Request, res: Response) => {
+app.get('/api/assets/:id/history', authenticateToken, async (req: Request, res: Response) => {
   try {
     const history = await prisma.assetHistory.findMany({
       where: { asset_id: req.params.id as string }, // <-- Add "as string" here
@@ -412,7 +465,7 @@ app.get('/api/assets/:id/history', async (req: Request, res: Response) => {
 // --- ASSIGNMENT ROUTE ---
 
 // Update an existing asset's details
-app.put('/api/assets/:id', async (req: Request, res: Response) => {
+app.put('/api/assets/:id', authenticateToken, isAdmin, async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string;
     const { name, category_id, department_id, location, condition, status } = req.body;
@@ -446,7 +499,7 @@ app.put('/api/assets/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/api/assets/:id/assign', async (req: Request, res: Response) => {
+app.post('/api/assets/:id/assign', authenticateToken, isAdmin, async (req: Request, res: Response) => {
   try {
     const id = req.params.id as string; // Explicitly tell TypeScript this is a single string
     const { staff_id, department_id, location } = req.body;

@@ -1,115 +1,171 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../hooks/AuthContext';
-import { Shield, Bell, Key, Check } from 'lucide-react';
+import { KeyRound, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
 
 export default function Settings() {
   const { user } = useAuth();
   
-  const [notifications, setNotifications] = useState({
-    emailAlerts: true,
-    assignmentAlerts: true,
-  });
-  const [savedNotice, setSavedNotice] = useState(false);
+  // Form State
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  
+  // Visibility Toggles
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('ui_notifications_pref');
-    if (saved) {
-      setNotifications(JSON.parse(saved));
+  const [message, setMessage] = useState({ text: '', type: '' });
+  const [loading, setLoading] = useState(false);
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setMessage({ text: 'New passwords do not match.', type: 'error' });
+      return;
     }
-  }, []);
 
-  const handleToggle = (key: 'emailAlerts' | 'assignmentAlerts') => {
-    const updated = { ...notifications, [key]: !notifications[key] };
-    setNotifications(updated);
-    localStorage.setItem('ui_notifications_pref', JSON.stringify(updated));
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 2000);
+    setLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/auth/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(user as any)?.token}`
+        },
+        body: JSON.stringify({ oldPassword, newPassword })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setMessage({ text: 'Password successfully updated!', type: 'success' });
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setShowOld(false);
+        setShowNew(false);
+        setShowConfirm(false);
+      } else {
+        setMessage({ text: data.error || 'Failed to update password.', type: 'error' });
+      }
+    } catch (err) {
+      setMessage({ text: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div>
         <h2 className="text-2xl font-bold text-gray-800">Account Settings</h2>
-        <p className="text-sm text-gray-500">Manage your profile and application preferences</p>
+        <p className="text-sm text-gray-500">Manage your profile and security preferences</p>
       </div>
 
-      {/* Profile Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center space-x-4">
-          <div className="h-16 w-16 rounded-full bg-ui-blue text-white flex items-center justify-center font-bold text-2xl border-2 border-ui-gold shadow-sm">
-            {user?.name?.charAt(0) || 'U'}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        {/* Profile Summary Header */}
+        <div className="bg-gradient-to-r from-ui-blue to-blue-900 p-6 flex items-center gap-4 text-white">
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30">
+            <User className="w-8 h-8 text-white" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-gray-900">{user?.name || 'User'}</h3>
-            <p className="text-sm text-gray-500 flex items-center mt-1">
-              <Shield className="w-4 h-4 mr-1 text-ui-gold" />
-              {user?.role} Account
+            <h3 className="text-xl font-bold">{user?.name || 'Staff Member'}</h3>
+            <p className="text-blue-100 text-sm flex items-center gap-2 mt-1">
+              {user?.email} <span className="px-2 py-0.5 bg-ui-gold/90 text-blue-950 text-xs font-bold rounded-full">{user?.role}</span>
             </p>
           </div>
         </div>
 
-        <div className="p-6 space-y-4">
-          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4">Personal Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Full Name</label>
-              <input type="text" disabled value={user?.name || ''} className="mt-1 w-full border border-gray-200 rounded-md p-2.5 bg-gray-50 text-gray-600" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email Address</label>
-              <input type="email" disabled value={user?.email || ''} className="mt-1 w-full border border-gray-200 rounded-md p-2.5 bg-gray-50 text-gray-600" />
-            </div>
+        <div className="p-6 md:p-8">
+          <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
+            <ShieldCheck className="w-5 h-5 text-ui-blue" />
+            <h4 className="text-lg font-bold text-gray-800">Security & Password</h4>
           </div>
-        </div>
-      </div>
 
-      {/* Preferences Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 flex items-center">
-            <Key className="w-4 h-4 mr-2 text-gray-400" /> Security
-          </h4>
-          <p className="text-sm text-gray-500 mb-4">Account credentials are managed by central directory services.</p>
-          <button
-            onClick={() => alert("Password changes are restricted to Central University IT Helpdesk for this demo environment.")}
-            className="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors w-full cursor-pointer"
-          >
-            Request Password Reset
-          </button>
-        </div>
+          {message.text && (
+            <div className={`p-4 rounded-xl mb-6 text-sm font-medium border ${message.type === 'success' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+              {message.text}
+            </div>
+          )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider flex items-center">
-              <Bell className="w-4 h-4 mr-2 text-gray-400" /> Notifications
-            </h4>
-            {savedNotice && (
-              <span className="text-xs font-semibold text-green-600 flex items-center">
-                <Check className="w-3.5 h-3.5 mr-1" /> Saved
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-gray-500 mb-4">Manage your alert preferences across the application.</p>
-          <div className="space-y-4">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifications.emailAlerts}
-                onChange={() => handleToggle('emailAlerts')}
-                className="rounded text-ui-blue focus:ring-ui-blue h-4 w-4 cursor-pointer"
-              />
-              <span className="text-sm text-gray-700">Email alerts for maintenance updates</span>
-            </label>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={notifications.assignmentAlerts}
-                onChange={() => handleToggle('assignmentAlerts')}
-                className="rounded text-ui-blue focus:ring-ui-blue h-4 w-4 cursor-pointer"
-              />
-              <span className="text-sm text-gray-700">New asset assignment notifications</span>
-            </label>
-          </div>
+          <form onSubmit={handlePasswordChange} className="max-w-md space-y-5">
+            {/* Current Password */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Current Password</label>
+              <div className="relative">
+                <input
+                  type={showOld ? 'text' : 'password'}
+                  required
+                  className="w-full border border-gray-300 rounded-xl p-3 pr-12 outline-none focus:ring-2 focus:ring-ui-blue/20 focus:border-ui-blue bg-gray-50 focus:bg-white transition-colors"
+                  value={oldPassword}
+                  onChange={(e) => setOldPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowOld(!showOld)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  {showOld ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* New Password */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">New Password</label>
+              <div className="relative">
+                <input
+                  type={showNew ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  className="w-full border border-gray-300 rounded-xl p-3 pr-12 outline-none focus:ring-2 focus:ring-ui-blue/20 focus:border-ui-blue bg-gray-50 focus:bg-white transition-colors"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNew(!showNew)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  {showNew ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm New Password */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Confirm New Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirm ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  className="w-full border border-gray-300 rounded-xl p-3 pr-12 outline-none focus:ring-2 focus:ring-ui-blue/20 focus:border-ui-blue bg-gray-50 focus:bg-white transition-colors"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+                >
+                  {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-ui-blue text-white py-3 rounded-xl hover:bg-blue-900 font-bold shadow-md transition-colors flex items-center justify-center gap-2 mt-4 disabled:opacity-70 cursor-pointer"
+            >
+              <KeyRound className="w-4 h-4" />
+              {loading ? 'Updating...' : 'Update Password'}
+            </button>
+          </form>
         </div>
       </div>
     </div>
