@@ -3,7 +3,7 @@ import { useAuth } from '../hooks/AuthContext';
 import { KeyRound, ShieldCheck, User, Eye, EyeOff } from 'lucide-react';
 
 export default function Settings() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   
   // Form State
   const [oldPassword, setOldPassword] = useState('');
@@ -33,7 +33,7 @@ export default function Settings() {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(user as any)?.token}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ oldPassword, newPassword })
       });

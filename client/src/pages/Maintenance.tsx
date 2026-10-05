@@ -18,7 +18,7 @@ export default function Maintenance() {
   const [assets, setAssets] = useState<any[]>([]);
   const [filter, setFilter] = useState<'All' | 'In Progress' | 'Resolved'>('All');
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +29,7 @@ export default function Maintenance() {
   const fetchData = () => {
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
     
-    const headers = { 'Authorization': `Bearer ${(user as any)?.token}` };
+    const headers = { 'Authorization': `Bearer ${token}` };
     
     Promise.all([
       fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance${query}`, { headers }).then(res => res.json()),
@@ -55,7 +55,7 @@ export default function Maintenance() {
     try {
       const res = await fetch('https://asset-mgt-ewkj.onrender.com/api/maintenance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       });
       
@@ -75,7 +75,7 @@ export default function Maintenance() {
     try {
       const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/maintenance/${id}/resolve`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         fetchData();

@@ -11,14 +11,14 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
 
-  const { user } = useAuth()
+  const { user, token } = useAuth();
   useEffect(() => {
     if (!user) return;
     const query = user?.role === 'Staff' && user.email ? `?email=${encodeURIComponent(user.email)}` : '';
     fetch(`https://asset-mgt-ewkj.onrender.com/api/dashboard${query}`, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(user as any)?.token}`
+        'Authorization': `Bearer ${token}`
       }
     })
       

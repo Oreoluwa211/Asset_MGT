@@ -6,7 +6,7 @@ export default function Staff() {
   const [staff, setStaff] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteModal, setDeleteModal] = useState<{id: string, name: string} | null>(null);
@@ -15,7 +15,7 @@ export default function Staff() {
   const [errorMsg, setErrorMsg] = useState('');
 
 const fetchData = () => {
-    const headers = { 'Authorization': `Bearer ${(user as any)?.token}` };
+    const headers = { 'Authorization': `Bearer ${token}` };
     Promise.all([
       fetch('https://asset-mgt-ewkj.onrender.com/api/staff', { headers }).then(res => res.json()),
       fetch('https://asset-mgt-ewkj.onrender.com/api/departments', { headers }).then(res => res.json())
@@ -35,7 +35,7 @@ const fetchData = () => {
     
     await fetch(url, {
       method, 
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(formData)
     });
     
@@ -47,7 +47,7 @@ const fetchData = () => {
     if (!deleteModal) return;
     const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/staff/${deleteModal.id}`, { 
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     if (res.ok) {
       setDeleteModal(null);

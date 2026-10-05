@@ -5,12 +5,12 @@ import { useAuth } from '../hooks/AuthContext';
 export default function Reports() {
   const [assets, setAssets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   useEffect(() => {
     if (!user) return;
     fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {
-      headers: { 'Authorization': `Bearer ${(user as any)?.token}` }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => {

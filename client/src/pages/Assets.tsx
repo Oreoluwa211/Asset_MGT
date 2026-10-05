@@ -65,7 +65,7 @@ export default function Assets() {
   const [staffList, setStaffList] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   
   const [assetHistory, setAssetHistory] = useState<any[]>([]);
 
@@ -90,10 +90,10 @@ export default function Assets() {
 
   const fetchData = () => {
     Promise.all([
-      fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/departments', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/categories', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json()),
-      fetch('https://asset-mgt-ewkj.onrender.com/api/staff', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}`}}).then(res => res.json())
+      fetch('https://asset-mgt-ewkj.onrender.com/api/assets', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/departments', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/categories', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}}).then(res => res.json()),
+      fetch('https://asset-mgt-ewkj.onrender.com/api/staff', {headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`}}).then(res => res.json())
     ]).then(([assetsData, deptsData, catsData, staffData]) => {
       setAssets(assetsData);
       setDepartments(deptsData);
@@ -143,7 +143,7 @@ export default function Assets() {
 
       const res = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       });
 
@@ -167,7 +167,7 @@ export default function Assets() {
     try {
       const res = await fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${assignAsset.id}/assign`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${(user as any)?.token}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(assignData)
       });
       if (res.ok) {
@@ -189,7 +189,7 @@ export default function Assets() {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(user as any)?.token}`
+          'Authorization': `Bearer ${token}`
         }
       });
       
@@ -274,7 +274,7 @@ export default function Assets() {
                     onClick={() => {
                       setViewAsset(asset);
                       // Fetch history for this asset
-                      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${(asset as any).id}/history`, {headers: {'Authorization': `Bearer ${(user as any)?.token}`}})
+                      fetch(`https://asset-mgt-ewkj.onrender.com/api/assets/${(asset as any).id}/history`, {headers: {'Authorization': `Bearer ${token}`}})
                         .then(res => res.json())
                         .then(data => setAssetHistory(data));
                     }} 
